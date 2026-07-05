@@ -38,12 +38,18 @@ Linux 서버에서 결과 이미지의 한글이 깨지거나 빈칸으로 보�
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y wkhtmltopdf fonts-noto-cjk fontconfig
+sudo apt-get install -y wkhtmltopdf fonts-nanum fonts-noto-cjk fontconfig
 fc-cache -fv
-fc-match "Noto Sans CJK KR"
+fc-match "NanumGothic:lang=ko"
 ```
 
-기본 CSS 폰트는 `Malgun Gothic`, `Noto Sans CJK KR`, `Noto Sans KR`, `NanumGothic` 순서로 잡습니다. 서버에 다른 한글 폰트를 쓰려면 `.env`에 `IMAGE_FONT_FAMILY`를 설정합니다.
+기본 CSS 폰트는 `Malgun Gothic`, `Noto Sans CJK KR`, `Noto Sans KR`, `NanumGothic` 순서로 잡습니다. 서버에서 `wkhtmltoimage`가 여전히 한글 폰트를 못 잡으면 `.env`에 실제 TTF 파일을 직접 지정합니다.
+
+```bash
+IMAGE_FONT_FILE=/usr/share/fonts/truetype/nanum/NanumGothic.ttf
+```
+
+서버에 다른 한글 폰트를 쓰려면 `.env`에 `IMAGE_FONT_FAMILY`도 설정할 수 있습니다.
 
 ## 시총 상위 15개 EPS 변동률
 
