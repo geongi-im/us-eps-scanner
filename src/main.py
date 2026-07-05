@@ -7,7 +7,6 @@ import html
 import os
 from pathlib import Path
 import re
-import subprocess
 
 from models import EpsRecord, ScannerRow, Ticker, percent_change
 from providers import fetch_yahoo_estimates
@@ -27,14 +26,6 @@ DEFAULT_OUTPUT_DIR = "output"
 DEFAULT_IMAGE_FONT_FAMILY = (
     '"Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR", "NanumGothic", '
     '"Apple SD Gothic Neo", "UnDotum", Arial, sans-serif'
-)
-EMBEDDED_IMAGE_FONT_NAME = "ScannerKoreanFont"
-LINUX_KOREAN_FONT_CANDIDATES = (
-    "NanumGothic",
-    "Noto Sans CJK KR",
-    "Noto Sans KR",
-    "UnDotum",
-    "Baekmuk Dotum",
 )
 
 FIELD_LABELS = {
@@ -585,9 +576,6 @@ def _save_table_image(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     image_width = _image_width(rows)
     font_family = os.getenv("IMAGE_FONT_FAMILY") or DEFAULT_IMAGE_FONT_FAMILY
-    font_face_css = _image_font_face_css()
-    if font_face_css:
-        font_family = f'"{EMBEDDED_IMAGE_FONT_NAME}", {font_family}'
 
     df_html = pd.DataFrame(rows).to_html(index=False, classes="styled-table", escape=False)
     df_html = re.sub(r"(<tr[^>]*>)\s*<td([^>]*)>", r'\1<td class="first-col"\2>', df_html)
@@ -599,7 +587,6 @@ def _save_table_image(
     <head>
         <meta charset="UTF-8">
         <style>
-            {font_face_css}
             body {{
                 font-family: {font_family};
                 margin: 16px;
@@ -703,65 +690,6 @@ def _default_image_path(output_dir: str, title: str) -> Path:
     safe_title = re.sub(r"[^A-Za-z0-9]+", "_", title).strip("_").lower()
     date_label = datetime.now().strftime("%Y%m%d")
     return Path(output_dir) / f"{safe_title}_{date_label}.png"
-
-
-def _image_font_face_css() -> str:
-    font_path = os.getenv("IMAGE_FONT_FILE") or _find_linux_korean_font_file()
-    if not font_path:
-        return ""
-
-    path = Path(font_path).expanduser()
-    if not path.is_absolute() or not path.exists():
-        return ""
-
-    try:
-        font_url = path.as_uri()
-    except ValueError:
-        return ""
-
-    return (
-        f'@font-face {{ font-family: "{EMBEDDED_IMAGE_FONT_NAME}"; '
-        f'src: url("{font_url}"); '
-        "font-weight: normal; font-style: normal; }"
-    )
-
-
-def _find_linux_korean_font_file() -> str | None:
-    if os.name != "posix":
-        return None
-
-    fallback: str | None = None
-    for family in LINUX_KOREAN_FONT_CANDIDATES:
-        try:
-            result = subprocess.run(
-                ["fc-match", "-f", "%{file}", f"{family}:lang=ko"],
-                check=False,
-                capture_output=True,
-                text=True,
-                timeout=2,
-            )
-        except (OSError, subprocess.TimeoutExpired):
-            return None
-
-        font_path = result.stdout.strip()
-        if not font_path:
-            continue
-
-        path = Path(font_path)
-        if not path.exists() or not _looks_like_korean_font(path):
-            continue
-
-        if path.suffix.lower() in {".ttf", ".otf"}:
-            return str(path)
-        fallback = fallback or str(path)
-
-    return fallback
-
-
-def _looks_like_korean_font(path: Path) -> bool:
-    normalized = path.name.lower().replace(" ", "")
-    korean_font_names = ("nanum", "noto", "cjk", "undotum", "baekmuk", "malgun")
-    return any(name in normalized for name in korean_font_names)
 
 
 def _image_width(rows: list[dict[str, object]]) -> int:
