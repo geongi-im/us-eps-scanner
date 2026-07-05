@@ -23,10 +23,6 @@ PROVIDER_HISTORY_LABELS = {
 }
 
 DEFAULT_OUTPUT_DIR = "output"
-DEFAULT_IMAGE_FONT_FAMILY = (
-    '"Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR", "NanumGothic", '
-    '"Apple SD Gothic Neo", "UnDotum", Arial, sans-serif'
-)
 
 FIELD_LABELS = {
     "avg": "평균",
@@ -575,7 +571,6 @@ def _save_table_image(
     output_path = Path(image_output) if image_output else _default_image_path(output_dir, title)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     image_width = _image_width(rows)
-    font_family = os.getenv("IMAGE_FONT_FAMILY") or DEFAULT_IMAGE_FONT_FAMILY
 
     df_html = pd.DataFrame(rows).to_html(index=False, classes="styled-table", escape=False)
     df_html = re.sub(r"(<tr[^>]*>)\s*<td([^>]*)>", r'\1<td class="first-col"\2>', df_html)
@@ -588,7 +583,7 @@ def _save_table_image(
         <meta charset="UTF-8">
         <style>
             body {{
-                font-family: {font_family};
+                font-family: "Malgun Gothic", "Noto Sans KR", Arial, sans-serif;
                 margin: 16px;
                 color: #222;
                 background: #ffffff;

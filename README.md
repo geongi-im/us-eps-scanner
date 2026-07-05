@@ -34,17 +34,6 @@ Copy-Item .env.sample .env
 
 이미지 생성에는 `wkhtmltoimage`가 필요합니다. Windows 기준으로 `wkhtmltopdf`를 설치한 뒤 `.env`의 `WKHTMLTOIMAGE_PATH`를 실제 실행 파일 경로로 맞춥니다. Telegram 전송을 쓰려면 `.env`에 `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`도 설정합니다.
 
-Linux 서버에서 결과 이미지의 한글이 깨지거나 빈칸으로 보이면 한글 폰트가 없는 상태입니다. Ubuntu/Debian 기준으로 아래처럼 설치한 뒤 다시 실행합니다.
-
-```bash
-sudo apt-get update
-sudo apt-get install -y wkhtmltopdf fonts-noto-cjk fontconfig
-fc-cache -fv
-fc-match "Noto Sans CJK KR"
-```
-
-기본 CSS 폰트는 `Malgun Gothic`, `Noto Sans CJK KR`, `Noto Sans KR`, `NanumGothic` 순서로 잡습니다. 서버에 다른 한글 폰트를 쓰려면 `.env`에 `IMAGE_FONT_FAMILY`를 설정합니다.
-
 ## 시총 상위 15개 EPS 변동률
 
 다음 명령은 Yahoo screener에서 미국 상장 시총 상위 15개를 가져오고, 다음 분기(`+1q`) 평균 EPS estimate 기준으로 Yahoo API가 제공하는 `7일`, `30일`, `60일`, `90일` 변동률 테이블 이미지를 `output/`에 생성합니다. 출력 순서는 EPS 개선율 순위가 아니라 시총 순서입니다.
