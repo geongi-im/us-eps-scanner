@@ -24,25 +24,11 @@ PROVIDER_HISTORY_LABELS = {
 }
 
 DEFAULT_OUTPUT_DIR = "output"
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-PROJECT_FONT_DIR = PROJECT_ROOT / "fonts"
 DEFAULT_IMAGE_FONT_FAMILY = (
     '"Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR", "NanumGothic", '
     '"Apple SD Gothic Neo", "UnDotum", Arial, sans-serif'
 )
 EMBEDDED_IMAGE_FONT_NAME = "ScannerKoreanFont"
-PROJECT_REGULAR_FONT_CANDIDATES = (
-    "NanumGothic.ttf",
-    "NanumGothic-Regular.ttf",
-    "NotoSansKR-Regular.ttf",
-    "NotoSansCJKkr-Regular.otf",
-)
-PROJECT_BOLD_FONT_CANDIDATES = (
-    "NanumGothicBold.ttf",
-    "NanumGothic-Bold.ttf",
-    "NotoSansKR-Bold.ttf",
-    "NotoSansCJKkr-Bold.otf",
-)
 LINUX_KOREAN_FONT_CANDIDATES = (
     "NanumGothic",
     "Noto Sans CJK KR",
@@ -720,80 +706,31 @@ def _default_image_path(output_dir: str, title: str) -> Path:
 
 
 def _image_font_face_css() -> str:
-    font_files = _image_font_files()
-    if not font_files:
+    font_path = os.getenv("IMAGE_FONT_FILE") or _find_linux_korean_font_file()
+    if not font_path:
         return ""
 
-    rules = []
-    for path, weight in font_files:
-        try:
-            font_url = path.as_uri()
-        except ValueError:
-            continue
+    path = Path(font_path).expanduser()
+    if not path.is_absolute() or not path.exists():
+        return ""
 
-        rules.append(
-            f'@font-face {{ font-family: "{EMBEDDED_IMAGE_FONT_NAME}"; '
-            f'src: url("{font_url}"); '
-            f"font-weight: {weight}; font-style: normal; }}"
-        )
+    try:
+        font_url = path.as_uri()
+    except ValueError:
+        return ""
 
-    return "\n".join(rules)
-
-
-def _image_font_files() -> list[tuple[Path, int]]:
-    project_fonts = _find_project_korean_font_files()
-    if project_fonts:
-        return project_fonts
-
-    env_font_file = _resolve_font_path(os.getenv("IMAGE_FONT_FILE"))
-    if env_font_file:
-        return [(env_font_file, 400)]
-
-    linux_font_file = _find_linux_korean_font_file()
-    if linux_font_file:
-        return [(linux_font_file, 400)]
-
-    return []
+    return (
+        f'@font-face {{ font-family: "{EMBEDDED_IMAGE_FONT_NAME}"; '
+        f'src: url("{font_url}"); '
+        "font-weight: normal; font-style: normal; }"
+    )
 
 
-def _find_project_korean_font_files() -> list[tuple[Path, int]]:
-    regular = _first_existing_project_font(PROJECT_REGULAR_FONT_CANDIDATES)
-    if not regular:
-        return []
-
-    fonts = [(regular, 400)]
-    bold = _first_existing_project_font(PROJECT_BOLD_FONT_CANDIDATES)
-    if bold:
-        fonts.append((bold, 700))
-    return fonts
-
-
-def _first_existing_project_font(candidates: tuple[str, ...]) -> Path | None:
-    for filename in candidates:
-        path = PROJECT_FONT_DIR / filename
-        if path.exists():
-            return path
-    return None
-
-
-def _resolve_font_path(raw_path: str | None) -> Path | None:
-    if not raw_path:
-        return None
-
-    path = Path(raw_path).expanduser()
-    if not path.is_absolute():
-        path = PROJECT_ROOT / path
-
-    if not path.exists():
-        return None
-    return path.resolve()
-
-
-def _find_linux_korean_font_file() -> Path | None:
+def _find_linux_korean_font_file() -> str | None:
     if os.name != "posix":
         return None
 
-    fallback: Path | None = None
+    fallback: str | None = None
     for family in LINUX_KOREAN_FONT_CANDIDATES:
         try:
             result = subprocess.run(
@@ -815,8 +752,8 @@ def _find_linux_korean_font_file() -> Path | None:
             continue
 
         if path.suffix.lower() in {".ttf", ".otf"}:
-            return path.resolve()
-        fallback = fallback or path.resolve()
+            return str(path)
+        fallback = fallback or str(path)
 
     return fallback
 
