@@ -581,9 +581,10 @@ def _save_table_image(
     <html>
     <head>
         <meta charset="UTF-8">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
         <style>
             body {{
-                font-family: "Malgun Gothic", "Noto Sans KR", Arial, sans-serif;
+                font-family: "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
                 margin: 16px;
                 color: #222;
                 background: #ffffff;
