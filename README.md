@@ -34,22 +34,18 @@ Copy-Item .env.sample .env
 
 이미지 생성에는 `wkhtmltoimage`가 필요합니다. Windows 기준으로 `wkhtmltopdf`를 설치한 뒤 `.env`의 `WKHTMLTOIMAGE_PATH`를 실제 실행 파일 경로로 맞춥니다. Telegram 전송을 쓰려면 `.env`에 `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`도 설정합니다.
 
-Linux 서버에서 결과 이미지의 한글이 깨지거나 빈칸으로 보이면 한글 폰트가 없는 상태입니다. Ubuntu/Debian 기준으로 아래처럼 설치한 뒤 다시 실행합니다.
+Linux 서버에서는 `fonts/` 폴더에 포함된 나눔고딕 폰트를 이미지 생성에 사용합니다. 서버 전역 한글 폰트 설치에 의존하지 않으므로 `wkhtmltoimage`만 설치되어 있으면 됩니다.
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y wkhtmltopdf fonts-nanum fonts-noto-cjk fontconfig
-fc-cache -fv
-fc-match "NanumGothic:lang=ko"
+sudo apt-get install -y wkhtmltopdf
 ```
 
-기본 CSS 폰트는 `Malgun Gothic`, `Noto Sans CJK KR`, `Noto Sans KR`, `NanumGothic` 순서로 잡습니다. 서버에서 `wkhtmltoimage`가 여전히 한글 폰트를 못 잡으면 `.env`에 실제 TTF 파일을 직접 지정합니다.
+기본 폰트 파일은 `fonts/NanumGothic.ttf`이고, 굵은 글씨는 `fonts/NanumGothicBold.ttf`를 사용합니다. 다른 폰트를 쓰려면 같은 폴더에 TTF/OTF 파일을 넣거나 `.env`의 `IMAGE_FONT_FILE`을 프로젝트 기준 상대 경로 또는 절대 경로로 지정합니다.
 
 ```bash
-IMAGE_FONT_FILE=/usr/share/fonts/truetype/nanum/NanumGothic.ttf
+IMAGE_FONT_FILE=fonts/NanumGothic.ttf
 ```
-
-서버에 다른 한글 폰트를 쓰려면 `.env`에 `IMAGE_FONT_FAMILY`도 설정할 수 있습니다.
 
 ## 시총 상위 15개 EPS 변동률
 
