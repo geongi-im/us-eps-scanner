@@ -9,6 +9,10 @@ from retry import retry_transient
 
 US_MAJOR_EXCHANGES = ["NMS", "NYQ", "NCM", "NGM", "ASE"]
 
+# 같은 회사의 다른 주식 종류 중 제외할 티커. BRK-A 와 BRK-B 는 Yahoo 의 EPS
+# 추정치가 서로 어긋나므로 BRK-B 만 남긴다.
+EXCLUDED_SYMBOLS = {"BRK-A"}
+
 
 def fetch_top_us_market_cap_tickers(
     limit: int = 100,
@@ -63,7 +67,7 @@ def fetch_top_us_market_cap_tickers(
     seen_names: set[str] = set()
     for quote in quotes:
         symbol = str(quote.get("symbol") or "").strip().upper()
-        if not symbol or symbol in seen:
+        if not symbol or symbol in seen or symbol in EXCLUDED_SYMBOLS:
             continue
         market_cap = _quote_number(quote, "intradaymarketcap", "marketCap")
         if market_cap is None:
